@@ -102,14 +102,32 @@ class AnimeScenery {
     this.canvas.height = this.height * this.dpr;
     this.ctx.scale(this.dpr, this.dpr);
 
-    // Update Moon position: Upper right quadrant
-    this.moon.x = this.width * 0.78;
-    this.moon.y = Math.max(80, this.height * 0.20);
-    this.moon.radius = Math.max(38, Math.min(52, this.width * 0.04));
+    // Responsive Moon & Lantern positioning for Desktop, Mobile Portrait, and Landscape
+    const isShortOrLandscape = this.height < 560;
+    const isMobilePortrait = this.width < 768 && !isShortOrLandscape;
 
-    // Update Lantern & Character position: on the lower-left slope
-    this.lantern.x = this.width * 0.22;
-    this.lantern.y = this.height * 0.88;
+    if (isShortOrLandscape) {
+      // Landscape: Place moon in top right corner away from the horizontal cockpit card
+      this.moon.x = this.width * 0.88;
+      this.moon.y = Math.max(42, this.height * 0.14);
+      this.moon.radius = Math.max(22, Math.min(30, this.height * 0.075));
+      this.lantern.x = this.width * 0.09;
+      this.lantern.y = this.height * 0.90;
+    } else if (isMobilePortrait) {
+      // Mobile Portrait: Placed high up near top right
+      this.moon.x = this.width * 0.82;
+      this.moon.y = Math.max(65, this.height * 0.12);
+      this.moon.radius = Math.max(26, Math.min(36, this.width * 0.08));
+      this.lantern.x = this.width * 0.14;
+      this.lantern.y = this.height * 0.88;
+    } else {
+      // Desktop & Tablet
+      this.moon.x = this.width * 0.78;
+      this.moon.y = Math.max(80, this.height * 0.20);
+      this.moon.radius = Math.max(38, Math.min(52, this.width * 0.04));
+      this.lantern.x = this.width * 0.22;
+      this.lantern.y = this.height * 0.88;
+    }
 
     // Regenerate grass according to new dimensions
     this.generateGrass();
