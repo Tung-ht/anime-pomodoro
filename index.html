@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌙 Starlight Pomodoro | Dreamy Anime Night & Focus</title>
+  
+  <!-- Google Fonts: Quicksand & Outfit & Cinzel -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Outfit:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
+</head>
+<body class="night-theme">
+
+  <!-- Background Canvas for 2D/3D Anime Night Sky, Moon, Meteors, Wind, Grass & Silhouette -->
+  <canvas id="anime-canvas"></canvas>
+
+  <!-- Ambient Sky Glow & Vignette Overlay -->
+  <div class="sky-overlay"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <div class="brand">
+      <span class="brand-icon">✨</span>
+      <span class="brand-title">Starlight Pomodoro</span>
+      <span class="brand-tag">Night Edition</span>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Quick Effect Controls (Wind / Meteors / Moon) -->
+      <button id="btn-shoot-meteor" class="nav-btn" title="Wish upon a shooting star (Shortcut: Space)">
+        <i data-lucide="sparkles"></i>
+        <span>Wish Star</span>
+      </button>
+
+      <button id="btn-ambient-mixer" class="nav-btn" title="Natural ambient night sounds (Wind, Crickets, Rain, Fire)">
+        <i data-lucide="wind"></i>
+        <span>Night Sounds</span>
+      </button>
+
+      <button id="btn-tasks" class="nav-btn" title="Today's study goals & task list">
+        <i data-lucide="check-square"></i>
+        <span>Goals</span>
+      </button>
+
+      <button id="btn-settings" class="nav-btn" title="Pomodoro & sky atmosphere settings">
+        <i data-lucide="settings"></i>
+      </button>
+
+      <button id="btn-zen" class="nav-btn" title="Zen / Fullscreen scenic view (Shortcut: Z)">
+        <i data-lucide="maximize-2"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Focus Container -->
+  <main class="main-container">
+    
+    <!-- Pomodoro Timer Card -->
+    <section class="timer-card" id="timer-card">
+      
+      <!-- Mode Tabs (Focus / Short Break / Long Break) -->
+      <div class="mode-tabs">
+        <button class="mode-btn active" data-mode="pomodoro">
+          <i data-lucide="flame"></i> Focus
+        </button>
+        <button class="mode-btn" data-mode="shortBreak">
+          <i data-lucide="coffee"></i> Short Break
+        </button>
+        <button class="mode-btn" data-mode="longBreak">
+          <i data-lucide="moon"></i> Long Break
+        </button>
+      </div>
+
+      <!-- Circular Timer Display -->
+      <div class="timer-display-wrap">
+        <svg class="progress-ring" viewBox="0 0 320 320">
+          <defs>
+            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" />
+              <stop offset="50%" stop-color="#818cf8" />
+              <stop offset="100%" stop-color="#c084fc" />
+            </linearGradient>
+            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+          <circle class="ring-bg" cx="160" cy="160" r="140" />
+          <circle class="ring-progress" id="ring-progress" cx="160" cy="160" r="140" />
+        </svg>
+
+        <div class="timer-center">
+          <div class="timer-time" id="timer-display">25:00</div>
+          <div class="timer-status" id="timer-status">Ready to Focus</div>
+          <div class="current-task-pill" id="current-task-display" title="Click to select or manage study goals">
+            <span class="task-dot"></span>
+            <span class="task-text">No goal selected</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timer Control Buttons -->
+      <div class="timer-controls">
+        <button id="btn-quick-minus" class="ctrl-btn sub-btn" title="Subtract 5 minutes">
+          -5m
+        </button>
+
+        <button id="btn-start" class="ctrl-btn main-play-btn" title="Start / Pause timer (Shortcut: Enter)">
+          <i data-lucide="play" id="play-icon"></i>
+          <span id="play-text">Start</span>
+        </button>
+
+        <button id="btn-skip" class="ctrl-btn sub-btn" title="Skip to next session">
+          <i data-lucide="skip-forward"></i>
+        </button>
+
+        <button id="btn-reset" class="ctrl-btn sub-btn" title="Reset current timer">
+          <i data-lucide="rotate-ccw"></i>
+        </button>
+
+        <button id="btn-quick-plus" class="ctrl-btn sub-btn" title="Add 5 minutes">
+          +5m
+        </button>
+      </div>
+
+      <!-- Session Indicator -->
+      <div class="session-tracker">
+        <div class="pomo-dots" id="pomo-dots">
+          <!-- Rendered via JS -->
+        </div>
+        <div class="session-stat-text">
+          Today: <strong id="stat-completed-count">0</strong> sessions (<span id="stat-total-minutes">0</span> mins)
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- YouTube Floating Music Player Dock (Bottom left corner) -->
+  <aside class="music-dock" id="music-dock">
+    <div class="dock-vinyl" id="dock-vinyl">
+      <div class="vinyl-disc" id="vinyl-disc">
+        <div class="vinyl-center"></div>
+      </div>
+    </div>
+
+    <div class="dock-info">
+      <div class="track-title-wrapper">
+        <span class="track-title" id="track-title">Loading study playlist...</span>
+      </div>
+      <div class="dock-subinfo">
+        <span class="music-badge" id="music-status-badge">YouTube Lofi</span>
+        <span class="music-count" id="music-count">1/5</span>
+        <button class="shuffle-badge active" id="btn-shuffle-toggle" title="Toggle Random Shuffle Mode">
+          <i data-lucide="shuffle"></i> Shuffle
+        </button>
+      </div>
+    </div>
+
+    <div class="dock-controls">
+      <button class="music-btn" id="btn-prev-track" title="Previous track">
+        <i data-lucide="skip-back"></i>
+      </button>
+
+      <button class="music-btn play-track-btn" id="btn-play-music" title="Play / Pause music">
+        <i data-lucide="play" id="music-play-icon"></i>
+      </button>
+
+      <button class="music-btn" id="btn-next-track" title="Next track (Random shuffle)">
+        <i data-lucide="skip-forward"></i>
+      </button>
+
+      <!-- Volume control -->
+      <div class="volume-container">
+        <button class="music-btn" id="btn-mute-music" title="Mute / Unmute">
+          <i data-lucide="volume-2" id="volume-icon"></i>
+        </button>
+        <div class="volume-slider-wrapper">
+          <input type="range" id="volume-slider" min="0" max="100" value="75" class="mini-slider">
+        </div>
+      </div>
+
+      <!-- Toggle Video Preview Button -->
+      <button class="music-btn" id="btn-toggle-video" title="Show / Hide Mini Video Screen">
+        <i data-lucide="tv"></i>
+      </button>
+
+      <!-- Open Playlist Modal Button -->
+      <button class="music-btn playlist-btn" id="btn-open-playlist" title="Manage your personal YouTube playlist">
+        <i data-lucide="list-music"></i>
+        <span class="playlist-dot"></span>
+      </button>
+    </div>
+
+    <!-- YouTube Iframe Container (Can pop up as a cozy mini-screen) -->
+    <div id="yt-player-container" class="yt-container">
+      <div class="yt-screen-header">
+        <span>🌙 YouTube Player</span>
+      </div>
+      <div id="youtube-iframe-target"></div>
+    </div>
+  </aside>
+
+  <!-- Zen Mode Floating Minimal Clock (Active in Zen Mode) -->
+  <div class="zen-overlay" id="zen-overlay">
+    <div class="zen-content">
+      <div class="zen-time" id="zen-time">25:00</div>
+      <div class="zen-sub" id="zen-sub">🌙 Deep focus under the starlight</div>
+      <div class="zen-hint">Press <kbd>Z</kbd> or click anywhere to return to controls</div>
+    </div>
+  </div>
+
+  <!-- MODAL: YouTube Playlist Manager -->
+  <div class="modal-overlay" id="modal-playlist">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="video" class="text-red"></i>
+          <h3>Your YouTube Playlist</h3>
+        </div>
+        <button class="modal-close" data-close="modal-playlist">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-desc">
+          Paste any YouTube link (Lofi, Piano, Anime OST, Study Beats...). Songs are saved locally and played in smart random shuffle.
+        </p>
+
+        <!-- Add YouTube Video Form -->
+        <form id="form-add-video" class="add-video-form">
+          <div class="input-group">
+            <input type="text" id="input-yt-url" placeholder="https://www.youtube.com/watch?v=... or youtu.be/..." required>
+          </div>
+          <div class="input-row">
+            <input type="text" id="input-yt-title" placeholder="Song title (optional, auto-extracts if blank)">
+            <button type="submit" class="btn-primary">
+              <i data-lucide="plus"></i> Add to List
+            </button>
+          </div>
+        </form>
+
+        <!-- Current Playlist List -->
+        <div class="playlist-section-header">
+          <span>Current Playlist (<strong id="playlist-length">0</strong> songs)</span>
+          <div class="playlist-actions-right">
+            <button id="btn-reset-default-playlist" class="btn-text" title="Restore default study playlist">
+              <i data-lucide="refresh-cw"></i> Restore Defaults
+            </button>
+            <button id="btn-clear-playlist" class="btn-text text-danger" title="Clear entire playlist">
+              <i data-lucide="trash-2"></i> Clear All
+            </button>
+          </div>
+        </div>
+
+        <div class="playlist-list-wrap" id="playlist-items-container">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Pomodoro & Sky Atmosphere Settings -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="sliders" class="text-cyan"></i>
+          <h3>Timer & Atmosphere Settings</h3>
+        </div>
+        <button class="modal-close" data-close="modal-settings">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <h4 class="setting-group-title">Duration (Minutes)</h4>
+        <div class="time-settings-grid">
+          <div class="setting-item">
+            <label for="set-pomo-time">Focus Time</label>
+            <input type="number" id="set-pomo-time" min="1" max="180" value="25">
+          </div>
+          <div class="setting-item">
+            <label for="set-short-time">Short Break</label>
+            <input type="number" id="set-short-time" min="1" max="60" value="5">
+          </div>
+          <div class="setting-item">
+            <label for="set-long-time">Long Break</label>
+            <input type="number" id="set-long-time" min="1" max="90" value="15">
+          </div>
+          <div class="setting-item">
+            <label for="set-cycles-count">Long Break Interval</label>
+            <input type="number" id="set-cycles-count" min="1" max="12" value="4">
+          </div>
+        </div>
+
+        <h4 class="setting-group-title">Automations</h4>
+        <div class="toggle-list">
+          <label class="toggle-row">
+            <span>Auto-transition to breaks</span>
+            <input type="checkbox" id="set-auto-break" class="switch-checkbox">
+          </label>
+          <label class="toggle-row">
+            <span>Auto-start focus sessions</span>
+            <input type="checkbox" id="set-auto-pomo" class="switch-checkbox">
+          </label>
+          <label class="toggle-row">
+            <span>Play chime sound on completion</span>
+            <input type="checkbox" id="set-chime-sound" class="switch-checkbox" checked>
+          </label>
+        </div>
+
+        <h4 class="setting-group-title">Anime Sky Atmosphere</h4>
+        <div class="sky-settings-grid">
+          <div class="slider-row">
+            <span>Meteor Shower Frequency:</span>
+            <input type="range" id="set-meteor-rate" min="1" max="5" value="3">
+          </div>
+          <div class="slider-row">
+            <span>Night Wind Strength:</span>
+            <input type="range" id="set-wind-strength" min="1" max="5" value="3">
+          </div>
+          <div class="slider-row">
+            <span>Fireflies & Stardust Density:</span>
+            <input type="range" id="set-particle-count" min="20" max="100" value="50">
+          </div>
+          <div class="style-select-row">
+            <span>Moon Style:</span>
+            <select id="set-moon-style">
+              <option value="crescent" selected>Dreamy Crescent Moon</option>
+              <option value="full">Luminous Full Moon</option>
+              <option value="ethereal">Celestial Lavender Moon</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="btn-save-settings" class="btn-primary w-full">
+            <i data-lucide="check"></i> Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Study Goals & To-do List -->
+  <div class="modal-overlay" id="modal-tasks">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="check-circle-2" class="text-green"></i>
+          <h3>Today's Study Goals</h3>
+        </div>
+        <button class="modal-close" data-close="modal-tasks">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-add-task" class="add-task-form">
+          <input type="text" id="input-task-name" placeholder="Add a new goal (e.g. Read 20 pages, solve problems...)" required>
+          <button type="submit" class="btn-primary">
+            <i data-lucide="plus"></i> Add
+          </button>
+        </form>
+
+        <div class="task-list-wrap" id="task-list-container">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Nocturnal Ambient Mixer -->
+  <div class="modal-overlay" id="modal-ambient">
+    <div class="modal-card modal-small">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="volume-2" class="text-purple"></i>
+          <h3>Nocturnal Ambient Mixer</h3>
+        </div>
+        <button class="modal-close" data-close="modal-ambient">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-desc">
+          Pure synthesized natural soundscapes with Web Audio API. Layer with YouTube Lofi for the ultimate calm focus environment.
+        </p>
+
+        <div class="ambient-mixer-grid">
+          <!-- Wind -->
+          <div class="ambient-control-card">
+            <div class="ambient-header">
+              <div class="ambient-label">
+                <i data-lucide="wind"></i> Night Breeze
+              </div>
+              <button class="ambient-toggle-btn" id="toggle-wind">Turn On</button>
+            </div>
+            <input type="range" id="vol-wind" min="0" max="100" value="50" class="ambient-slider">
+          </div>
+
+          <!-- Crickets -->
+          <div class="ambient-control-card">
+            <div class="ambient-header">
+              <div class="ambient-label">
+                <i data-lucide="trees"></i> Summer Crickets
+              </div>
+              <button class="ambient-toggle-btn" id="toggle-crickets">Turn On</button>
+            </div>
+            <input type="range" id="vol-crickets" min="0" max="100" value="45" class="ambient-slider">
+          </div>
+
+          <!-- Rain -->
+          <div class="ambient-control-card">
+            <div class="ambient-header">
+              <div class="ambient-label">
+                <i data-lucide="cloud-rain"></i> Gentle Night Rain
+              </div>
+              <button class="ambient-toggle-btn" id="toggle-rain">Turn On</button>
+            </div>
+            <input type="range" id="vol-rain" min="0" max="100" value="50" class="ambient-slider">
+          </div>
+
+          <!-- Fireplace -->
+          <div class="ambient-control-card">
+            <div class="ambient-header">
+              <div class="ambient-label">
+                <i data-lucide="flame"></i> Hearth Fireplace
+              </div>
+              <button class="ambient-toggle-btn" id="toggle-fire">Turn On</button>
+            </div>
+            <input type="range" id="vol-fire" min="0" max="100" value="50" class="ambient-slider">
+          </div>
+        </div>
+
+        <!-- Chime Sound Test -->
+        <div class="chime-test-wrap">
+          <button id="btn-test-chime" class="btn-text">
+            <i data-lucide="bell"></i> Test Completion Chime
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Floating Help Pill -->
+  <div class="shortcuts-tip">
+    <span>💡 <strong>Space:</strong> Wish Star &nbsp;|&nbsp; <strong>Z:</strong> Zen Mode &nbsp;|&nbsp; <strong>Enter:</strong> Start/Pause</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/canvas-scenery.js"></script>
+  <script src="js/ambient-audio.js"></script>
+  <script src="js/youtube-player.js"></script>
+  <script src="js/pomodoro.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

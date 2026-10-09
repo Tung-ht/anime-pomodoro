@@ -1,0 +1,18 @@
+{
+  "name": "anime-pomodoro",
+  "version": "1.0.0",
+  "description": "Website Pomodoro Timer phong cách Anime đêm thơ mộng (mặt trăng, gió, mưa sao băng, nhạc YouTube lofi)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "pomodoro",
+    "anime",
+    "timer",
+    "study",
+    "youtube-music"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}
